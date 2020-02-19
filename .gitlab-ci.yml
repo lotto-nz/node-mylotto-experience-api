@@ -1,0 +1,33 @@
+---
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+stages:
+  - build
+  - deploy
+
+before_script:
+  - echo "$ANSIBLE_VAULT_PASSWORD" > docker/.ansible_vault_password
+
+build:
+  stage: build
+  script:
+    - make -C containerpilot-template container SRC_PROJECT_NAME=mylotto-experience-api
+    - make -C containerpilot-template push SRC_PROJECT_NAME=mylotto-experience-api
+
+dev1:
+  stage: deploy
+  script:
+    - make -C containerpilot-template deploy SRC_PROJECT_NAME=mylotto-experience-api CMD="-e 'dc=bdc env=dev1 count=1'"
+  environment:
+    name: dev1
+  when: manual
+
+dev2:
+  stage: deploy
+  script:
+    - make -C containerpilot-template deploy SRC_PROJECT_NAME=mylotto-experience-api CMD="-e 'dc=bdc env=dev2 count=1'"
+  environment:
+    name: dev2
+  when: manual
