@@ -23,7 +23,18 @@ export class InteractiveService {
         return this._interactive;
     }
 
+    private _onbehalf: OnBehalfInteractiveSystem;
     onbehalf(): OnBehalfInteractiveSystem {
-        throw Error('Not supported');
+        if (!this._onbehalf) {
+            this._onbehalf = Interactive.onbehalf({
+                url: this.config.onbehalf.url,
+                host: this.config.onbehalf.host,
+                apiKey: this.config.onbehalf.apiKey,
+                siteId: this.config.onbehalf.siteId,
+                bunyan: this.logger.log()
+            });
+        }
+
+        return this._onbehalf;
     }
 }
