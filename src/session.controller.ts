@@ -20,15 +20,25 @@ export class SessionController {
             const tokens = await this.interactive.user().login(body.username, body.password, { siteId: '25', clientId: 'LnzInteractiveMobileApp' });
 
             const bearer = tokens.find( t => t.tokenType === "bearer");
+            if (bearer == undefined) {
+                throw new Error('Unable to login');
+            }
 
-            const profile = await this.interactive.user().getProfile(bearer.token);
+            this.logger.log().info({username: body.username}, 'Retrieving profile and wallet (scatter-gather)');
+            const info = await Promise.all([
+                this.interactive.user().getProfile(bearer.token),
+                this.interactive.user().getWallet(bearer.token)]
+            );
+
             return {
-                profile,
+                profile: info[0],
+                wallet: info[1],
+                isInsideGeoFence: true,
                 tokens
             };
         } catch (ex) {
             this.logger.log().error({message: ex.message}, 'Login');
-            throw new HttpException('System Error', 500);
+            throw new HttpException(ex.message, 401);
         }
     }
 }
