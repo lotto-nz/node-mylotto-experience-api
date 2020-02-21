@@ -17,17 +17,17 @@ export class SessionController {
     async login(@Body() body: LoginRequest): Promise<any> {
         try {
             this.logger.log().info({username: body.username}, 'Logging in');
-            const tokens = await this.interactive.user().login(body.username, body.password, { siteId: '25', clientId: 'LnzInteractiveMobileApp' });
+            const tokens = await this.interactive.player().login(body.username, body.password, this.config.interactive.session);
 
             const bearer = tokens.find( t => t.tokenType === "bearer");
             if (bearer == undefined) {
-                throw new Error('Unable to login');
+                throw new HttpException('Unable to login', 500);
             }
 
             this.logger.log().info({username: body.username}, 'Retrieving profile and wallet (scatter-gather)');
             const info = await Promise.all([
-                this.interactive.user().getProfile(bearer.token),
-                this.interactive.user().getWallet(bearer.token)]
+                this.interactive.player().getProfile(bearer.token),
+                this.interactive.player().getWallet(bearer.token)]
             );
 
             return {
@@ -38,6 +38,10 @@ export class SessionController {
             };
         } catch (ex) {
             this.logger.log().error({message: ex.message}, 'Login');
+            if (ex instanceof HttpException) {
+                throw ex;
+            }
+
             throw new HttpException(ex.message, 401);
         }
     }

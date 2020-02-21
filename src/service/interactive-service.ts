@@ -11,9 +11,9 @@ export class InteractiveService {
     }
 
     private _interactive: InteractiveSystem;
-    user(): InteractiveSystem {
+    player(): InteractiveSystem {
         if (!this._interactive) {
-            this._interactive = Interactive.create({
+            this._interactive = Interactive.player({
                 url: this.config.interactive.url,
                 host: this.config.interactive.host,
                 bunyan: this.logger.log()
